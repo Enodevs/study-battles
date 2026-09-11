@@ -1,73 +1,45 @@
-import { Platform, StyleSheet, Text, type TextProps } from 'react-native';
+import { Text, type TextProps } from 'react-native';
 
-import { Fonts, ThemeColor } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
+import { ToneText, type Tone } from '@/constants/theme';
+import { cn } from '@/utils/cn';
 
-export type ThemedTextProps = TextProps & {
-  type?: 'default' | 'title' | 'small' | 'smallBold' | 'subtitle' | 'link' | 'linkPrimary' | 'code';
-  themeColor?: ThemeColor;
+/** Steps of the type scale defined in `tailwind.config.js`. */
+export type TextVariant =
+  | 'display'
+  | 'title'
+  | 'heading'
+  | 'subheading'
+  | 'bodyLarge'
+  | 'body'
+  | 'label'
+  | 'caption'
+  | 'captionBold'
+  | 'micro';
+
+const VARIANT: Record<TextVariant, string> = {
+  display: 'text-display font-extrabold tracking-[-0.5px]',
+  title: 'text-title font-extrabold tracking-[-0.5px]',
+  heading: 'text-heading font-extrabold tracking-[-0.3px]',
+  subheading: 'text-subheading font-bold',
+  bodyLarge: 'text-body-lg font-bold',
+  body: 'text-body font-medium',
+  label: 'text-label font-bold',
+  caption: 'text-caption font-medium',
+  captionBold: 'text-caption font-bold',
+  micro: 'text-micro font-semibold',
 };
 
-export function ThemedText({ style, type = 'default', themeColor, ...rest }: ThemedTextProps) {
-  const theme = useTheme();
+export type ThemedTextProps = TextProps & {
+  variant?: TextVariant;
+  tone?: Tone;
+};
 
-  return (
-    <Text
-      style={[
-        { color: theme[themeColor ?? 'text'] },
-        type === 'default' && styles.default,
-        type === 'title' && styles.title,
-        type === 'small' && styles.small,
-        type === 'smallBold' && styles.smallBold,
-        type === 'subtitle' && styles.subtitle,
-        type === 'link' && styles.link,
-        type === 'linkPrimary' && styles.linkPrimary,
-        type === 'code' && styles.code,
-        style,
-      ]}
-      {...rest}
-    />
-  );
+/** The app's only text primitive: one type scale, one set of colour tones. */
+export function ThemedText({
+  variant = 'body',
+  tone = 'fg',
+  className,
+  ...rest
+}: ThemedTextProps) {
+  return <Text className={cn(VARIANT[variant], ToneText[tone], className)} {...rest} />;
 }
-
-const styles = StyleSheet.create({
-  small: {
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: 500,
-  },
-  smallBold: {
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: 700,
-  },
-  default: {
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: 500,
-  },
-  title: {
-    fontSize: 48,
-    fontWeight: 600,
-    lineHeight: 52,
-  },
-  subtitle: {
-    fontSize: 32,
-    lineHeight: 44,
-    fontWeight: 600,
-  },
-  link: {
-    lineHeight: 30,
-    fontSize: 14,
-  },
-  linkPrimary: {
-    lineHeight: 30,
-    fontSize: 14,
-    color: '#3c87f7',
-  },
-  code: {
-    fontFamily: Fonts.mono,
-    fontWeight: Platform.select({ android: 700 }) ?? 500,
-    fontSize: 12,
-  },
-});

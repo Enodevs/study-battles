@@ -1,18 +1,37 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
+import '@/global.css';
+
+import { Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useColorScheme } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
+import { Platform, View } from 'react-native';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import AppTabs from '@/components/app-tabs';
+import { createNavigationTheme, ThemeVars } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-theme';
 
 SplashScreen.preventAutoHideAsync();
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+export default function RootLayout() {
+  const scheme = useColorScheme();
+
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AnimatedSplashOverlay />
-      <AppTabs />
-    </ThemeProvider>
+    // `ThemeVars` publishes the palette as custom properties for the whole tree,
+    // which is what `bg-surface`, `text-fg` and friends resolve against.
+    //
+    // Web is left out on purpose: there the same properties already come from a
+    // `prefers-color-scheme` block in the stylesheet, so it renders correctly on
+    // the very first paint. Setting them inline would outrank that block and
+    // flash light before hydration resolves the scheme.
+    <View
+      style={Platform.OS === 'web' ? undefined : ThemeVars[scheme]}
+      className="flex-1 bg-bg">
+      <ThemeProvider value={createNavigationTheme(scheme)}>
+        <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
+        <AnimatedSplashOverlay />
+
+        {/* Every screen draws its own header, so the stack never renders one. */}
+        <Stack screenOptions={{ headerShown: false }} />
+      </ThemeProvider>
+    </View>
   );
 }

@@ -1,98 +1,37 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
+import { router } from 'expo-router';
+import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
-
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
-  return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
+import { ActiveBattles } from '@/components/home/active-battles';
+import { BattleCta } from '@/components/home/battle-cta';
+import { HomeHeader } from '@/components/home/home-header';
+import { PracticeSection } from '@/components/home/practice-section';
+import { MOCK_BATTLES, MOCK_USER, MOCK_WEAK_TOPICS } from '@/constants/mock-data';
+import { MaxContentWidth, Spacing } from '@/constants/theme';
+import { useTabBarHeight } from '@/hooks/use-tab-bar-height';
 
 export default function HomeScreen() {
+  const tabBarHeight = useTabBarHeight();
+
   return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
+    <View className="flex-1 bg-bg">
+      <SafeAreaView
+        edges={['top']}
+        className="w-full flex-1 self-center"
+        style={{ maxWidth: MaxContentWidth }}>
+        <ScrollView
+          contentContainerClassName="gap-8 px-6 pt-6"
+          contentContainerStyle={{ paddingBottom: tabBarHeight + Spacing.xxl }}
+          showsVerticalScrollIndicator={false}>
+          <HomeHeader name={MOCK_USER.name} streakDays={MOCK_USER.streakDays} />
 
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
+          <BattleCta onPress={() => router.push('/battle/create')} />
 
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
+          <ActiveBattles battles={MOCK_BATTLES} />
 
-        {Platform.OS === 'web' && <WebBadge />}
+          <PracticeSection weakTopics={MOCK_WEAK_TOPICS} />
+        </ScrollView>
       </SafeAreaView>
-    </ThemedView>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'row',
-  },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
-  },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
-  },
-  title: {
-    textAlign: 'center',
-  },
-  code: {
-    textTransform: 'uppercase',
-  },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
-  },
-});

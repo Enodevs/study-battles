@@ -1,32 +1,53 @@
-import { NativeTabs } from 'expo-router/unstable-native-tabs';
-import { useColorScheme } from 'react-native';
+import { TabList, TabSlot, TabTrigger, Tabs } from 'expo-router/ui';
+import { StyleSheet } from 'react-native';
 
-import { Colors } from '@/constants/theme';
+import { TabBarButton, TabBarContainer } from '@/components/tab-bar';
 
 export default function AppTabs() {
-  const scheme = useColorScheme();
-  const colors = Colors[scheme === 'unspecified' ? 'light' : scheme];
-
   return (
-    <NativeTabs
-      backgroundColor={colors.background}
-      indicatorColor={colors.backgroundElement}
-      labelStyle={{ selected: { color: colors.text } }}>
-      <NativeTabs.Trigger name="index">
-        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          src={require('@/assets/images/tabIcons/home.png')}
-          renderingMode="template"
-        />
-      </NativeTabs.Trigger>
+    <Tabs style={styles.tabs}>
+      <TabSlot style={styles.slot} />
 
-      <NativeTabs.Trigger name="explore">
-        <NativeTabs.Trigger.Label>Explore</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          src={require('@/assets/images/tabIcons/explore.png')}
-          renderingMode="template"
-        />
-      </NativeTabs.Trigger>
-    </NativeTabs>
+      <TabList asChild>
+        <TabBarContainer>
+          <TabTrigger name="home" href="/" asChild>
+            <TabBarButton label="Home" icon="home-outline" activeIcon="home" />
+          </TabTrigger>
+
+          <TabTrigger name="battles" href="/battles" asChild>
+            <TabBarButton
+              label="Battles"
+              icon="shield-sword-outline"
+              activeIcon="shield-sword"
+            />
+          </TabTrigger>
+
+          <TabTrigger name="practice" href="/practice" asChild>
+            <TabBarButton
+              label="Practice"
+              icon="book-open-outline"
+              activeIcon="book-open-page-variant"
+            />
+          </TabTrigger>
+
+          <TabTrigger name="profile" href="/profile" asChild>
+            <TabBarButton
+              label="Profile"
+              icon="account-circle-outline"
+              activeIcon="account-circle"
+            />
+          </TabTrigger>
+        </TabBarContainer>
+      </TabList>
+    </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  tabs: {
+    flex: 1,
+  },
+  slot: {
+    flex: 1,
+  },
+});
