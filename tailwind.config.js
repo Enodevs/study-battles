@@ -16,6 +16,7 @@ module.exports = {
         surface: {
           DEFAULT: token('surface'),
           pressed: token('surface-pressed'),
+          shadow: token('surface-shadow'),
         },
         fg: token('fg'),
         muted: token('muted'),
@@ -24,6 +25,7 @@ module.exports = {
           DEFAULT: token('accent'),
           pressed: token('accent-pressed'),
           fg: token('accent-fg'),
+          shadow: token('accent-shadow'),
         },
         streak: token('streak'),
         success: token('success'),

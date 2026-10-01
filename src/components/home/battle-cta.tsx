@@ -13,9 +13,9 @@ export function BattleCta({ onPress }: BattleCtaProps) {
   const theme = useTheme();
 
   return (
-    <View className="gap-6 rounded-card border border-border bg-surface p-8">
-      <View className="h-[52px] w-[52px] items-center justify-center rounded-control bg-bg">
-        <MaterialCommunityIcons name="sword-cross" size={22} color={theme.accent} />
+    <View className="gap-6 rounded-card border border-accent/20 bg-accent/10 p-8">
+      <View className="h-[52px] w-[52px] items-center justify-center rounded-control bg-accent/15">
+        <MaterialCommunityIcons name="sword-cross" size={24} color={theme.accent} />
       </View>
 
       <View className="gap-2">

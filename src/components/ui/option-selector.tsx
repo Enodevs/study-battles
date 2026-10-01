@@ -27,12 +27,13 @@ export function OptionSelector<T extends string | number>({
     <View
       accessibilityRole="radiogroup"
       accessibilityLabel={accessibilityLabel}
-      className={variant === 'segmented' ? 'flex-row gap-2' : 'flex-row flex-wrap gap-2'}>
+      className={variant === 'segmented' ? 'flex-row gap-2.5' : 'flex-row flex-wrap gap-2.5'}>
       {options.map((option) => (
         <SelectableChip
           key={option.value}
           label={option.label}
           icon={option.icon}
+          color={option.color}
           selected={option.value === value}
           fill={variant === 'segmented'}
           onPress={() => onChange(option.value)}

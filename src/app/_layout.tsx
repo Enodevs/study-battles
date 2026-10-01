@@ -26,7 +26,7 @@ export default function RootLayout() {
       style={Platform.OS === 'web' ? undefined : ThemeVars[scheme]}
       className="flex-1 bg-bg">
       <ThemeProvider value={createNavigationTheme(scheme)}>
-        <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
+        <StatusBar style="light" />
         <AnimatedSplashOverlay />
 
         {/* Every screen draws its own header, so the stack never renders one. */}

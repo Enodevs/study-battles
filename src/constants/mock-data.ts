@@ -15,12 +15,12 @@ export const MOCK_USER = {
 export const MOCK_BATTLES: Battle[] = [
   {
     id: 'b1',
-    subject: 'Biology',
-    topic: 'Cell Division',
+    subject: 'Mathematics',
+    topic: 'Algebra',
     opponent: { id: 'u2', name: 'David' },
     status: 'your_turn',
     questionCount: 10,
-    opponentScore: 8,
+    opponentScore: 7,
   },
   {
     id: 'b2',
@@ -33,6 +33,16 @@ export const MOCK_BATTLES: Battle[] = [
   },
   {
     id: 'b3',
+    subject: 'English',
+    topic: 'Grammar',
+    opponent: { id: 'u5', name: 'Amina' },
+    status: 'won',
+    questionCount: 5,
+    yourScore: 4,
+    opponentScore: 3,
+  },
+  {
+    id: 'b4',
     subject: 'Chemistry',
     topic: 'Ionic Bonding',
     opponent: { id: 'u3', name: 'Sarah' },
@@ -42,7 +52,7 @@ export const MOCK_BATTLES: Battle[] = [
     opponentScore: 6,
   },
   {
-    id: 'b4',
+    id: 'b5',
     subject: 'History',
     topic: 'Cold War',
     opponent: { id: 'u4', name: 'Musa' },
@@ -57,13 +67,27 @@ export const MOCK_BATTLES: Battle[] = [
 export const MOCK_WEAK_TOPICS: WeakTopic[] = [
   {
     id: 'w1',
+    subject: 'Mathematics',
+    topic: 'Quadratic Equations',
+    accuracy: 0.58,
+    questionsAnswered: 19,
+  },
+  {
+    id: 'w2',
     subject: 'Biology',
     topic: 'Cell-cycle checkpoints',
     accuracy: 0.62,
     questionsAnswered: 21,
   },
   {
-    id: 'w2',
+    id: 'w3',
+    subject: 'English',
+    topic: 'Sentence Structure',
+    accuracy: 0.68,
+    questionsAnswered: 25,
+  },
+  {
+    id: 'w4',
     subject: 'History',
     topic: 'Cold War treaties',
     accuracy: 0.74,

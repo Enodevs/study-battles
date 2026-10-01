@@ -22,6 +22,10 @@ const palette = {
     accent: '#4F46E5',
     accentPressed: '#4338CA',
     accentFg: '#FFFFFF',
+    // The bottom edge a chunky button sits on. Always darker than its face, in
+    // both schemes, or the control stops reading as raised.
+    accentShadow: '#3730A3',
+    surfaceShadow: '#CFD0D7',
     streak: '#F97316',
     success: '#15803D',
     danger: '#DC2626',
@@ -37,6 +41,8 @@ const palette = {
     // Brighter than `accent` on purpose: on a dark ground, pressed reads as "lit up".
     accentPressed: '#818CF8',
     accentFg: '#FFFFFF',
+    accentShadow: '#3730A3',
+    surfaceShadow: '#0E0F11',
     streak: '#FB923C',
     success: '#4ADE80',
     danger: '#F87171',

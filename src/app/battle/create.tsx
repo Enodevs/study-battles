@@ -1,10 +1,10 @@
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { BattlePreviewCard } from '@/components/battle/battle-preview-card';
 import { ThemedText } from '@/components/themed-text';
 import { BackButton } from '@/components/ui/back-button';
 import { Button } from '@/components/ui/button';
@@ -21,22 +21,23 @@ import {
   SUBJECT_OPTIONS,
 } from '@/constants/battle-options';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
 import type { Difficulty, QuestionCount, Subject } from '@/types/battle';
 import { confirmFeedback } from '@/utils/haptics';
 
 /** Each block slides in just after the one above it. */
-const STAGGER_MS = 40;
+const STAGGER_MS = 50;
+
+/** How many characters are left before the counter starts warning. */
+const TOPIC_WARNING_SLACK = 10;
 
 function stagger(index: number) {
   return FadeInDown.delay(index * STAGGER_MS)
-    .duration(320)
-    .springify()
-    .damping(18);
+    .duration(300)
+    .damping(20)
+    .stiffness(140);
 }
 
 export default function CreateBattleScreen() {
-  const theme = useTheme();
   const insets = useSafeAreaInsets();
 
   const [subject, setSubject] = useState<Subject>(DEFAULT_SUBJECT);
@@ -47,12 +48,13 @@ export default function CreateBattleScreen() {
   const trimmedTopic = topic.trim();
   // Nothing can be generated without a topic, so that is the one gate.
   const canCreate = trimmedTopic.length > 0;
+  const nearTopicLimit = trimmedTopic.length > MAX_TOPIC_LENGTH - TOPIC_WARNING_SLACK;
 
   function handleCreate() {
     confirmFeedback();
 
     router.push({
-      pathname: '/battle/generate',
+      pathname: '/battle/generating',
       params: {
         subject,
         topic: trimmedTopic,
@@ -78,6 +80,7 @@ export default function CreateBattleScreen() {
           <ScrollView
             contentContainerClassName="gap-7 px-6 pb-8 pt-5"
             keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
             showsVerticalScrollIndicator={false}>
             <Animated.View entering={stagger(0)} className="gap-2">
               <ThemedText variant="display">Create a Battle</ThemedText>
@@ -101,10 +104,12 @@ export default function CreateBattleScreen() {
             <Animated.View entering={stagger(2)}>
               <Field
                 label="Topic"
-                hint={`${trimmedTopic.length}/${MAX_TOPIC_LENGTH}`}>
+                hint={`${trimmedTopic.length}/${MAX_TOPIC_LENGTH}`}
+                hintTone={nearTopicLimit ? 'streak' : 'muted'}>
                 <TextField
                   value={topic}
                   onChangeText={setTopic}
+                  iconName="pencil-outline"
                   placeholder="e.g. Cell division"
                   maxLength={MAX_TOPIC_LENGTH}
                   autoCapitalize="sentences"
@@ -136,23 +141,41 @@ export default function CreateBattleScreen() {
                 />
               </Field>
             </Animated.View>
+
+            <Animated.View entering={stagger(5)} className="gap-3">
+              <ThemedText
+                variant="captionBold"
+                tone="muted"
+                className="uppercase tracking-[1px]">
+                Your battle
+              </ThemedText>
+
+              <BattlePreviewCard
+                subject={subject}
+                topic={trimmedTopic}
+                difficulty={difficulty}
+                questionCount={questionCount}
+              />
+            </Animated.View>
           </ScrollView>
 
           <View
-            className="border-t border-border px-6 pt-4"
+            className="gap-3 border-t border-border px-6 pt-4"
             style={{ paddingBottom: Math.max(insets.bottom, Spacing.lg) }}>
+            {!canCreate ? (
+              <Animated.View entering={FadeIn.duration(200)}>
+                <ThemedText variant="caption" tone="muted" className="text-center">
+                  Add a topic to continue
+                </ThemedText>
+              </Animated.View>
+            ) : null}
+
             <Button
               label="Create Battle"
               size="large"
+              iconName="sword-cross"
               disabled={!canCreate}
               onPress={handleCreate}
-              icon={
-                <MaterialCommunityIcons
-                  name="sword-cross"
-                  size={20}
-                  color={theme.accentFg}
-                />
-              }
             />
           </View>
         </KeyboardAvoidingView>
