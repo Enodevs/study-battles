@@ -113,27 +113,36 @@ export default function BattleResultsScreen() {
           contentContainerStyle={{ paddingBottom: Spacing.xxxl }}
           showsVerticalScrollIndicator={false}>
           {/* Result Icon */}
-          <View className="items-center">
+          <View className="items-center gap-4">
             <Animated.View style={iconAnimatedStyle}>
               <View
-                className="h-24 w-24 items-center justify-center rounded-card"
-                style={{ backgroundColor: `${config.color}20` }}>
+                className="h-28 w-28 items-center justify-center rounded-full"
+                style={{ backgroundColor: `${config.color}15` }}>
                 <MaterialCommunityIcons
                   name={config.icon}
-                  size={56}
+                  size={64}
                   color={config.color}
                 />
               </View>
             </Animated.View>
 
             {result === 'won' && (
-              <Animated.View
-                style={confettiAnimatedStyle}
-                className="absolute -top-4">
-                <ThemedText variant="display" className="text-4xl">
-                  🎉
-                </ThemedText>
-              </Animated.View>
+              <>
+                <Animated.View
+                  style={confettiAnimatedStyle}
+                  className="absolute -left-8 -top-4">
+                  <ThemedText variant="display" className="text-5xl">
+                    🎉
+                  </ThemedText>
+                </Animated.View>
+                <Animated.View
+                  style={confettiAnimatedStyle}
+                  className="absolute -right-8 -top-4">
+                  <ThemedText variant="display" className="text-5xl">
+                    🎊
+                  </ThemedText>
+                </Animated.View>
+              </>
             )}
           </View>
 
@@ -150,36 +159,41 @@ export default function BattleResultsScreen() {
           {/* Score Comparison */}
           <Animated.View
             entering={FadeInUp.delay(200).duration(400)}
-            className="flex-row items-center justify-center gap-6">
-            <View className="items-center gap-2">
-              <ThemedText variant="caption" tone="muted">
-                You
-              </ThemedText>
-              <ThemedText
-                variant="display"
-                tone="accent"
-                className="tabular-nums">
-                {score}
-              </ThemedText>
-              <ThemedText variant="caption" tone="muted">
-                XP
-              </ThemedText>
-            </View>
+            className="gap-4 rounded-card border-2 bg-surface p-6"
+            style={{ borderColor: `${config.color}30` }}>
+            <View className="flex-row items-center justify-center gap-8">
+              <View className="items-center gap-2">
+                <ThemedText variant="caption" tone="muted">
+                  You
+                </ThemedText>
+                <ThemedText
+                  variant="display"
+                  className="tabular-nums text-4xl"
+                  style={{ color: result === 'won' ? config.color : theme.fg }}>
+                  {score}
+                </ThemedText>
+                <ThemedText variant="caption" tone="muted">
+                  XP
+                </ThemedText>
+              </View>
 
-            <ThemedText variant="title" tone="muted">
-              —
-            </ThemedText>
+              <View className="h-16 w-px bg-border" />
 
-            <View className="items-center gap-2">
-              <ThemedText variant="caption" tone="muted">
-                Opponent
-              </ThemedText>
-              <ThemedText variant="display" tone="muted" className="tabular-nums">
-                {opponentScore}
-              </ThemedText>
-              <ThemedText variant="caption" tone="muted">
-                XP
-              </ThemedText>
+              <View className="items-center gap-2">
+                <ThemedText variant="caption" tone="muted">
+                  Opponent
+                </ThemedText>
+                <ThemedText 
+                  variant="display" 
+                  tone="muted" 
+                  className="tabular-nums text-4xl"
+                  style={{ color: result === 'lost' ? config.color : theme.muted }}>
+                  {opponentScore}
+                </ThemedText>
+                <ThemedText variant="caption" tone="muted">
+                  XP
+                </ThemedText>
+              </View>
             </View>
           </Animated.View>
 
@@ -189,59 +203,65 @@ export default function BattleResultsScreen() {
           {/* Performance Stats */}
           <Animated.View
             entering={FadeInDown.delay(300).duration(400)}
-            className="gap-4">
-            <View className="flex-row items-center justify-between">
-              <ThemedText variant="body" tone="muted">
-                Accuracy
-              </ThemedText>
-              <ThemedText variant="bodyLarge" className="tabular-nums">
-                {accuracy}%
-              </ThemedText>
-            </View>
+            className="gap-4 rounded-card border border-border bg-surface p-6">
+            <ThemedText variant="subheading">Performance</ThemedText>
+            
+            <View className="gap-3">
+              <View className="flex-row items-center justify-between">
+                <ThemedText variant="body" tone="muted">
+                  Accuracy
+                </ThemedText>
+                <ThemedText 
+                  variant="bodyLarge" 
+                  className="tabular-nums"
+                  tone={accuracy >= 80 ? 'success' : accuracy >= 60 ? 'accent' : 'danger'}>
+                  {accuracy}%
+                </ThemedText>
+              </View>
 
-            <View className="flex-row items-center justify-between">
-              <ThemedText variant="body" tone="muted">
-                Correct
-              </ThemedText>
-              <ThemedText variant="bodyLarge" className="tabular-nums">
-                {correctCount} / {totalQuestions}
-              </ThemedText>
-            </View>
+              <View className="flex-row items-center justify-between">
+                <ThemedText variant="body" tone="muted">
+                  Correct Answers
+                </ThemedText>
+                <ThemedText variant="bodyLarge" className="tabular-nums" tone="success">
+                  {correctCount} / {totalQuestions}
+                </ThemedText>
+              </View>
 
-            <View className="flex-row items-center justify-between">
-              <ThemedText variant="body" tone="muted">
-                XP Earned
-              </ThemedText>
-              <ThemedText variant="bodyLarge" tone="accent" className="tabular-nums">
-                +{score}
-              </ThemedText>
+              <View className="flex-row items-center justify-between">
+                <ThemedText variant="body" tone="muted">
+                  XP Earned
+                </ThemedText>
+                <ThemedText variant="bodyLarge" tone="accent" className="tabular-nums">
+                  +{score}
+                </ThemedText>
+              </View>
             </View>
           </Animated.View>
 
           {/* Weak Topic (only show if there were mistakes) */}
           {incorrectCount > 0 && (
-            <>
-              <View className="h-px bg-border" />
-
-              <Animated.View
-                entering={FadeInDown.delay(400).duration(400)}
-                className="rounded-control border border-border bg-surface p-4">
-                <View className="mb-2 flex-row items-center gap-2">
-                  <MaterialCommunityIcons
-                    name="alert-circle-outline"
-                    size={20}
-                    color={theme.streak}
-                  />
-                  <ThemedText variant="bodyLarge">Needs practice</ThemedText>
-                </View>
-                <ThemedText variant="body" tone="muted">
-                  Cell Division
+            <Animated.View
+              entering={FadeInDown.delay(400).duration(400)}
+              className="rounded-card border-2 bg-streak/5 p-5"
+              style={{ borderColor: `${theme.streak}40` }}>
+              <View className="mb-3 flex-row items-center gap-2">
+                <MaterialCommunityIcons
+                  name="alert-circle"
+                  size={24}
+                  color={theme.streak}
+                />
+                <ThemedText variant="subheading" tone="streak">
+                  Needs Practice
                 </ThemedText>
-                <ThemedText variant="caption" tone="muted" className="mt-1">
-                  {incorrectCount} incorrect {incorrectCount === 1 ? 'answer' : 'answers'}
-                </ThemedText>
-              </Animated.View>
-            </>
+              </View>
+              <ThemedText variant="bodyLarge">
+                Cell Division
+              </ThemedText>
+              <ThemedText variant="body" tone="muted" className="mt-1">
+                {incorrectCount} incorrect {incorrectCount === 1 ? 'answer' : 'answers'}
+              </ThemedText>
+            </Animated.View>
           )}
 
           {/* Actions */}

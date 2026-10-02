@@ -13,9 +13,12 @@ import Animated, {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
+import { MOCK_USER } from '@/constants/mock-data';
 import { getQuestionsBySubject } from '@/constants/mock-questions';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { ensureAuthenticated } from '@/lib/auth';
+import { supabase } from '@/lib/supabase';
 import type { Subject } from '@/types/battle';
 import { cn } from '@/utils/cn';
 
@@ -27,9 +30,15 @@ const POINTS_SPEED_BONUS = 20;
 type AnswerState = 'idle' | 'correct' | 'incorrect' | 'timeout';
 
 export default function BattlePlayScreen() {
-  const params = useLocalSearchParams<{ subject?: Subject; topic?: string }>();
+  const params = useLocalSearchParams<{ 
+    subject?: Subject; 
+    topic?: string;
+    battleId?: string;
+    shareCode?: string;
+  }>();
   const subject = params.subject || 'Biology';
   const topic = params.topic || 'Cell division';
+  const battleId = params.battleId;
   
   // Get questions for the selected subject
   const MOCK_QUESTIONS = getQuestionsBySubject(subject);
@@ -42,6 +51,8 @@ export default function BattlePlayScreen() {
   const [correctCount, setCorrectCount] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState(TIMER_DURATION);
   const [opponentScore, setOpponentScore] = useState(0);
+  const [opponentName, setOpponentName] = useState('Opponent');
+  const [myPlayerId, setMyPlayerId] = useState<string | null>(null);
 
   const shakeAnimation = useSharedValue(0);
   const scaleAnimation = useSharedValue(1);
@@ -49,6 +60,48 @@ export default function BattlePlayScreen() {
   const currentQuestion = MOCK_QUESTIONS[currentQuestionIndex];
   const isLocked = answerState !== 'idle';
   const totalQuestions = MOCK_QUESTIONS.length;
+
+  // Fetch battle players on mount
+  useEffect(() => {
+    if (!battleId) return;
+
+    async function fetchPlayers() {
+      try {
+        const user = await ensureAuthenticated();
+        
+        const { data: players, error } = await supabase
+          .from('battle_players')
+          .select('*')
+          .eq('battle_id', battleId);
+
+        if (error) {
+          console.error('Failed to fetch players:', error);
+          return;
+        }
+
+        if (players && players.length > 0) {
+          // Find my player record
+          const myPlayer = players.find((p: any) => p.user_id === user.id);
+          if (myPlayer) {
+            setMyPlayerId(myPlayer.id);
+            setScore(myPlayer.score || 0);
+            setCorrectCount(myPlayer.correct_answers || 0);
+          }
+
+          // Find opponent
+          const opponent = players.find((p: any) => p.user_id !== user.id);
+          if (opponent) {
+            setOpponentName(opponent.display_name || 'Opponent');
+            setOpponentScore(opponent.score || 0);
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching players:', err);
+      }
+    }
+
+    fetchPlayers();
+  }, [battleId]);
 
   // Timer
   useEffect(() => {
@@ -82,8 +135,25 @@ export default function BattlePlayScreen() {
     if (isCorrect) {
       setAnswerState('correct');
       const speedBonus = timeRemaining > 10 ? POINTS_SPEED_BONUS : 0;
-      setScore((prev) => prev + POINTS_CORRECT + speedBonus);
-      setCorrectCount((prev) => prev + 1);
+      const newScore = score + POINTS_CORRECT + speedBonus;
+      const newCorrectCount = correctCount + 1;
+      
+      setScore(newScore);
+      setCorrectCount(newCorrectCount);
+
+      // Update score in Supabase if we have a player ID
+      if (battleId && myPlayerId) {
+        supabase
+          .from('battle_players')
+          .update({ 
+            score: newScore,
+            correct_answers: newCorrectCount,
+          })
+          .eq('id', myPlayerId)
+          .then(({ error }: { error: any }) => {
+            if (error) console.error('Failed to update score:', error);
+          });
+      }
 
       // Success animation
       scaleAnimation.value = withSequence(
@@ -103,10 +173,12 @@ export default function BattlePlayScreen() {
       );
     }
 
-    // Mock opponent scoring (deterministic based on time)
-    const timeSeed = Math.floor(timeRemaining * 10) % 41;
-    const opponentPoints = timeSeed + 60;
-    setOpponentScore((prev) => prev + opponentPoints);
+    // Mock opponent scoring if no real battle
+    if (!battleId) {
+      const timeSeed = Math.floor(timeRemaining * 10) % 41;
+      const opponentPoints = timeSeed + 60;
+      setOpponentScore((prev) => prev + opponentPoints);
+    }
 
     setTimeout(nextQuestion, FEEDBACK_DELAY);
   }
@@ -292,7 +364,7 @@ export default function BattlePlayScreen() {
           <View className="flex-row items-center justify-center gap-8 pt-4">
             <View className="items-center gap-1">
               <ThemedText variant="caption" tone="muted">
-                You
+                {MOCK_USER.name}
               </ThemedText>
               <ThemedText variant="heading" tone="accent" className="tabular-nums">
                 {score}
@@ -303,7 +375,7 @@ export default function BattlePlayScreen() {
 
             <View className="items-center gap-1">
               <ThemedText variant="caption" tone="muted">
-                Opponent
+                {opponentName}
               </ThemedText>
               <ThemedText variant="heading" tone="muted" className="tabular-nums">
                 {opponentScore}

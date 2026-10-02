@@ -25,7 +25,10 @@ export default function HomeScreen() {
           showsVerticalScrollIndicator={false}>
           <HomeHeader name={MOCK_USER.name} streakDays={MOCK_USER.streakDays} />
 
-          <BattleCta onPress={() => router.push('/battle/create')} />
+          <BattleCta 
+            onPress={() => router.push('/battle/create')} 
+            onJoinPress={() => router.push('/battle/join')}
+          />
 
           <ActiveBattles battles={MOCK_BATTLES} />
 

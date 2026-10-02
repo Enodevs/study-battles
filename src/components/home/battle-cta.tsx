@@ -7,9 +7,10 @@ import { useTheme } from '@/hooks/use-theme';
 
 export type BattleCtaProps = {
   onPress?: () => void;
+  onJoinPress?: () => void;
 };
 
-export function BattleCta({ onPress }: BattleCtaProps) {
+export function BattleCta({ onPress, onJoinPress }: BattleCtaProps) {
   const theme = useTheme();
 
   return (
@@ -25,7 +26,17 @@ export function BattleCta({ onPress }: BattleCtaProps) {
         </ThemedText>
       </View>
 
-      <Button label="Create Battle" size="large" onPress={onPress} className="mt-0.5 self-stretch" />
+      <View className="gap-3">
+        <Button label="Create Battle" size="large" onPress={onPress} className="self-stretch" />
+        <Button 
+          label="Join Battle" 
+          variant="secondary"
+          size="large" 
+          iconName="login-variant"
+          onPress={onJoinPress} 
+          className="self-stretch" 
+        />
+      </View>
     </View>
   );
 }

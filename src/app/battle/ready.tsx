@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { ScrollView, View } from 'react-native';
+import { ScrollView, Share, View } from 'react-native';
 import Animated, { FadeIn, FadeInDown, ZoomIn } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -17,16 +17,31 @@ export default function BattleReadyScreen() {
     topic: string;
     difficulty: Difficulty;
     questionCount: string;
+    battleId?: string;
+    shareCode?: string;
   }>();
 
   const subject = params.subject || 'Biology';
   const topic = params.topic || 'Cell division';
   const difficulty = params.difficulty || 'medium';
   const questionCount = (Number(params.questionCount) || 5) as QuestionCount;
+  const shareCode = params.shareCode;
 
-  function handleChallengeFriend() {
+  async function handleChallengeFriend() {
     selectionFeedback();
-    router.push('/battle/challenge');
+    
+    if (!shareCode) {
+      router.push('/battle/challenge');
+      return;
+    }
+
+    try {
+      await Share.share({
+        message: `Join my Study Battle on Study Battles!\n\nSubject: ${subject}\nTopic: ${topic}\n\nCode: ${shareCode}`,
+      });
+    } catch (error) {
+      console.error('Share failed:', error);
+    }
   }
 
   function handleBattleSolo() {
@@ -36,6 +51,8 @@ export default function BattleReadyScreen() {
       params: {
         subject,
         topic,
+        battleId: params.battleId,
+        shareCode: params.shareCode,
       },
     });
   }
@@ -73,12 +90,25 @@ export default function BattleReadyScreen() {
             />
           </Animated.View>
 
+          {shareCode && (
+            <Animated.View entering={FadeInDown.delay(260).duration(360)} className="gap-2">
+              <ThemedText variant="captionBold" tone="muted" className="text-center uppercase tracking-[1px]">
+                Share Code
+              </ThemedText>
+              <View className="rounded-control border-2 border-dashed border-accent/30 bg-accent/5 p-4">
+                <ThemedText variant="heading" tone="accent" className="text-center tracking-wider">
+                  {shareCode}
+                </ThemedText>
+              </View>
+            </Animated.View>
+          )}
+
           <View className="gap-3">
             <Animated.View entering={FadeInDown.delay(300).duration(360)}>
               <Button
-                label="Challenge Friend"
+                label={shareCode ? "Share with Friend" : "Challenge Friend"}
                 size="large"
-                iconName="account-plus"
+                iconName={shareCode ? "share-variant" : "account-plus"}
                 onPress={handleChallengeFriend}
               />
             </Animated.View>

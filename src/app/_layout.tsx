@@ -8,11 +8,23 @@ import { Platform, View } from 'react-native';
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { createNavigationTheme, ThemeVars } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-theme';
+import { ensureAuthenticated } from '@/lib/auth';
+import { useEffect } from 'react';
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const scheme = useColorScheme();
+
+  useEffect(() => {
+    ensureAuthenticated()
+      .then((user) => {
+        console.log('✅ Supabase user:', user.id);
+      })
+      .catch((error) => {
+        console.error('❌ Supabase auth failed:', error);
+      });
+  }, []);
 
   return (
     // `ThemeVars` publishes the palette as custom properties for the whole tree,

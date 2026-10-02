@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 import Animated, {
   Easing,
   FadeIn,
@@ -22,8 +22,12 @@ import {
 import { ThemedText } from '@/components/themed-text';
 import { ProgressBar } from '@/components/ui/progress-bar';
 import { subjectColor } from '@/constants/battle-options';
+import { MOCK_USER } from '@/constants/mock-data';
+import { getQuestionsBySubject } from '@/constants/mock-questions';
 import { MaxContentWidth } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { ensureAuthenticated } from '@/lib/auth';
+import { supabase } from '@/lib/supabase';
 import type { Difficulty, Subject } from '@/types/battle';
 import { withAlpha } from '@/utils/color';
 import { confirmFeedback } from '@/utils/haptics';
@@ -59,6 +63,8 @@ export default function GeneratingBattleScreen() {
   const theme = useTheme();
   const [stageIndex, setStageIndex] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
+  const [battleId, setBattleId] = useState<string | null>(null);
+  const [shareCode, setShareCode] = useState<string | null>(null);
 
   const bob = useSharedValue(0);
   const pop = useSharedValue(0);
@@ -76,6 +82,54 @@ export default function GeneratingBattleScreen() {
 
   const stage = STAGES[stageIndex];
   const tint = subjectColor(battle.subject) ?? theme.accent;
+
+  const createBattleInSupabase = useCallback(async () => {
+    try {
+      // Authenticate
+      await ensureAuthenticated();
+
+      // Get questions for the selected subject
+      const questions = getQuestionsBySubject(battle.subject);
+
+      // Call Supabase RPC
+      const { data, error: rpcError } = await supabase.rpc('create_battle', {
+        p_subject: battle.subject,
+        p_topic: battle.topic,
+        p_difficulty:
+          battle.difficulty.charAt(0).toUpperCase() +
+          battle.difficulty.slice(1).toLowerCase(),
+        p_question_count: Number(battle.questionCount),
+        p_questions: questions,
+        p_display_name: MOCK_USER.name,
+      });
+
+      if (rpcError) {
+        throw rpcError;
+      }
+
+      if (!data) {
+        throw new Error('No battle data returned');
+      }
+
+      // Store the battle ID and share code
+      setBattleId(data.id);
+      setShareCode(data.share_code);
+      setIsComplete(true);
+      confirmFeedback();
+    } catch (err) {
+      console.error('Failed to create battle:', err);
+      Alert.alert(
+        'Battle Creation Failed',
+        'Could not create battle. Please try again.',
+        [
+          {
+            text: 'Go Back',
+            onPress: () => router.back(),
+          },
+        ]
+      );
+    }
+  }, [battle]);
 
   // Idle motion: the comet drifts and the halo breathes until the work is done.
   useEffect(() => {
@@ -118,23 +172,30 @@ export default function GeneratingBattleScreen() {
         return;
       }
 
-      setIsComplete(true);
-      confirmFeedback();
+      // Last stage - create the battle in Supabase
+      createBattleInSupabase();
     }, STAGES[stageIndex].duration);
 
     return () => clearTimeout(timer);
-  }, [stageIndex, isComplete]);
+  }, [stageIndex, isComplete, createBattleInSupabase]);
 
   // `replace`, so Back from the next screen never lands here again.
   useEffect(() => {
-    if (!isComplete) return;
+    if (!isComplete || !shareCode) return;
 
     const timer = setTimeout(() => {
-      router.replace({ pathname: '/battle/ready', params: battle });
+      router.replace({
+        pathname: '/battle/ready',
+        params: {
+          ...battle,
+          battleId,
+          shareCode,
+        }
+      });
     }, COMPLETION_PAUSE_MS);
 
     return () => clearTimeout(timer);
-  }, [isComplete, battle]);
+  }, [isComplete, battle, battleId, shareCode]);
 
   const mascotStyle = useAnimatedStyle(() => ({
     transform: [
